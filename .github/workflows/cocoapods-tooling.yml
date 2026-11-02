@@ -1,0 +1,27 @@
+name: CocoaPods tooling
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.5'
+          bundler: '2.5.16'
+          bundler-cache: true
+      - name: Validate CocoaPods tooling
+        run: |
+          bundle check
+          bundle exec pod --version
+          bundle exec pod ipc spec AZDateBuilder.podspec > "$RUNNER_TEMP/AZDateBuilder.podspec.json"
+          bundle exec ruby -rxcodeproj -e 'Xcodeproj::Project.open("AZDateBuilder.xcodeproj")'
